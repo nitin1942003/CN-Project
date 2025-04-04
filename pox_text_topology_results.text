@@ -1,0 +1,77 @@
+nitin@Ubuntu:~/Desktop/CN_project$ sudo python3 pox_test_topology.py
+[sudo] password for nitin: 
+*** Adding controller
+*** Adding hosts
+*** Adding switches
+*** Creating links
+*** Starting network
+*** Configuring hosts
+h1 h2 
+*** Starting controller
+c0 
+*** Starting 2 switches
+s1 s2 ...
+*** Running CLI
+*** Starting CLI:
+mininet> h1 ping h2
+PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+64 bytes from 10.0.0.2: icmp_seq=1 ttl=64 time=8.77 ms
+64 bytes from 10.0.0.2: icmp_seq=2 ttl=64 time=0.998 ms
+64 bytes from 10.0.0.2: icmp_seq=3 ttl=64 time=0.096 ms
+64 bytes from 10.0.0.2: icmp_seq=4 ttl=64 time=0.170 ms
+64 bytes from 10.0.0.2: icmp_seq=5 ttl=64 time=0.115 ms
+64 bytes from 10.0.0.2: icmp_seq=6 ttl=64 time=0.139 ms
+64 bytes from 10.0.0.2: icmp_seq=7 ttl=64 time=0.107 ms
+64 bytes from 10.0.0.2: icmp_seq=8 ttl=64 time=0.098 ms
+64 bytes from 10.0.0.2: icmp_seq=9 ttl=64 time=0.124 ms
+64 bytes from 10.0.0.2: icmp_seq=10 ttl=64 time=0.123 ms
+64 bytes from 10.0.0.2: icmp_seq=11 ttl=64 time=0.123 ms
+64 bytes from 10.0.0.2: icmp_seq=12 ttl=64 time=0.125 ms
+64 bytes from 10.0.0.2: icmp_seq=13 ttl=64 time=0.132 ms
+64 bytes from 10.0.0.2: icmp_seq=14 ttl=64 time=0.123 ms
+^C
+--- 10.0.0.2 ping statistics ---
+14 packets transmitted, 14 received, 0% packet loss, time 13263ms
+rtt min/avg/max/mdev = 0.096/0.802/8.765/2.219 ms
+mininet> pingall
+*** Ping: testing ping reachability
+h1 -> h2 
+h2 -> h1 
+*** Results: 0% dropped (2/2 received)
+mininet> net
+h1 h1-eth0:s1-eth1
+h2 h2-eth0:s2-eth2
+s1 lo:  s1-eth1:h1-eth0 s1-eth2:s2-eth1
+s2 lo:  s2-eth1:s1-eth2 s2-eth2:h2-eth0
+c0
+mininet> dump
+<Host h1: h1-eth0:10.0.0.1 pid=19121> 
+<Host h2: h2-eth0:10.0.0.2 pid=19123> 
+<OVSSwitch s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None pid=19128> 
+<OVSSwitch s2: lo:127.0.0.1,s2-eth1:None,s2-eth2:None pid=19131> 
+<RemoteController c0: 127.0.0.1:6633 pid=19115> 
+mininet> xterm h1
+mininet> ping h2
+*** Unknown command: ping h2
+mininet> links
+h1-eth0<->s1-eth1 (OK OK) 
+s1-eth2<->s2-eth1 (OK OK) 
+s2-eth2<->h2-eth0 (OK OK) 
+mininet> sh ovs-ofctl dump-flows s1
+mininet> iperf h1 h2
+*** Iperf: testing TCP bandwidth between h1 and h2 
+^C
+Interrupt
+stopping h2 
+mininet> exit
+*** Stopping network
+*** Stopping 1 controllers
+c0 
+*** Stopping 1 terms
+*** Stopping 3 links
+...
+*** Stopping 2 switches
+s1 s2 
+*** Stopping 2 hosts
+h1 h2 
+*** Done
