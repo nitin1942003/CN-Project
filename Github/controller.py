@@ -1,3 +1,4 @@
+# Import necessary modules from Ryu and other libraries
 from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, DEAD_DISPATCHER
@@ -12,21 +13,27 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import monitor
 
-# Use the same topology type as in monitor.py
-TOPO_TYPE = 'datacenter'
+# Define the topology type
+TOPO_TYPE = 'simple'
 
 class SimpleSwitch13(app_manager.RyuApp):
+    # Specify OpenFlow version
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
+    # Define contexts for the application
     _CONTEXTS = {"monitor": monitor.NetworkMonitor}
+    # Define topology models
     TOPO_MODEL = {'simple': 'simple', 'datacenter': "datacenter"}
 
     def __init__(self, *args, **kwargs):
         super(SimpleSwitch13, self).__init__(*args, **kwargs)
+        # Initialize MAC address to port mapping
         self.mac_to_port = {}
+        # Get the monitor instance from kwargs
         self.monitor = kwargs["monitor"]
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
+        # Extract datapath, ofproto and parser from the event
         datapath = ev.msg.datapath
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
@@ -66,6 +73,7 @@ class SimpleSwitch13(app_manager.RyuApp):
           datapath.send_msg(mod)
 
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
+        # Helper function to add a flow entry to the switch
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
@@ -93,6 +101,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         parser = datapath.ofproto_parser
         in_port = msg.match['in_port']
 
+        # Parse the packet
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
 
@@ -102,11 +111,13 @@ class SimpleSwitch13(app_manager.RyuApp):
         dpid = datapath.id
         self.mac_to_port.setdefault(dpid, {})
 
+        # Log packet information
         self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
 
         # learn a mac address to avoid FLOOD next time.
         self.mac_to_port[dpid][src] = in_port
 
+        # Determine the out_port
         if dst in self.mac_to_port[dpid]:
             out_port = self.mac_to_port[dpid][dst]
         else:
@@ -128,14 +139,10 @@ class SimpleSwitch13(app_manager.RyuApp):
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
             data = msg.data
 
+        # Send packet out message
         out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
 
 
-
-
-
-
-
-#
+# End of SimpleSwitch13 class

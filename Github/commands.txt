@@ -1,0 +1,7 @@
+source ryu39-env/bin/activate
+sudo python3 datacenter_topo.py
+sudo python3 simple_topo.py
+ryu-manager controller.py
+
+# Clean up any previous Mininet topology/processes
+sudo mn -c 

@@ -13,9 +13,12 @@ import subprocess
 # Define the configuration option without registering it as a CLI option
 CONF = cfg.CONF
 # Default topology type
-TOPO_TYPE = 'datacenter'
+TOPO_TYPE = 'simple'
 
 class NetworkMonitor(app_manager.RyuApp):
+    """
+    A Ryu application for monitoring network traffic and applying rate limiting.
+    """
 
     def __init__(self, *args, **kwargs):
         super(NetworkMonitor, self).__init__(*args, **kwargs)
@@ -36,6 +39,16 @@ class NetworkMonitor(app_manager.RyuApp):
 
     # Applies ingress restriction to a high bw switch/port
     def apply_rate_limiting(self, switch, in_port, out_port, eth_dst, rate):
+        """
+        Applies ingress rate limiting to a switch port.
+        
+        Args:
+            switch (str): The switch name.
+            in_port (int): The input port number.
+            out_port (int): The output port number.
+            eth_dst (str): The destination Ethernet address.
+            rate (float): The current bitrate.
+        """
         c_rate = int(ceil(rate))
         switch_id = switch + "-eth" + str(in_port) + str(out_port) + str(eth_dst)
         ingressPolicingBurst, ingressPolicingRate = "ingress_policing_burst=10", "ingress_policing_rate=5000"
@@ -47,6 +60,16 @@ class NetworkMonitor(app_manager.RyuApp):
 
     # Removes ingress restriction to a high bw switch/port
     def revoke_rate_limiting(self, switch, in_port, out_port, eth_dst, rate):
+        """
+        Removes ingress rate limiting from a switch port.
+        
+        Args:
+            switch (str): The switch name.
+            in_port (int): The input port number.
+            out_port (int): The output port number.
+            eth_dst (str): The destination Ethernet address.
+            rate (float): The current bitrate.
+        """
         switch_id = switch + "-eth" + str(in_port) + str(out_port) + str(eth_dst)
         ingressPolicingBurst, ingressPolicingRate = "ingress_policing_burst=0", "ingress_policing_rate=0"
         if switch_id in self.rate_limited_switches:
@@ -58,6 +81,9 @@ class NetworkMonitor(app_manager.RyuApp):
     # Handler for receipt of flow statistics
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def _flow_stats_reply_handler(self, ev):
+        """
+        Handler for flow statistics replies.
+        """
         body = ev.msg.body
         dpid = int(ev.msg.datapath.id)
         if TOPO_TYPE == 'simple':
@@ -95,6 +121,15 @@ class NetworkMonitor(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPStateChange,[MAIN_DISPATCHER, DEAD_DISPATCHER])
     def _state_change_handler(self, ev):
+        """
+        Handles changes in the state of OpenFlow switches.
+        
+        This method adds or removes switches from the monitored datapaths
+        based on their connection status.
+        
+        Args:
+            ev (ryu.controller.ofp_event.EventOFPStateChange): The event object containing the state change information.
+        """
         datapath = ev.datapath
         if ev.state == MAIN_DISPATCHER:
             if not datapath.id in self.datapaths:
@@ -104,6 +139,12 @@ class NetworkMonitor(app_manager.RyuApp):
                 del self.datapaths[datapath.id]
 
     def _request_stats(self, datapath):
+        """
+        Sends requests for flow and port statistics to a datapath.
+        
+        Args:
+            datapath (ryu.controller.controller.Datapath): The datapath to request statistics from.
+        """
         print('send stats request: %016x' % datapath.id)
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
@@ -119,6 +160,12 @@ class NetworkMonitor(app_manager.RyuApp):
         return bytes * 8.0 / (self.query_interval * 1024)
 
     def _monitor(self):
+        """
+        Main monitoring loop.
+        
+        This method runs in a separate green thread and periodically
+        requests statistics from all active datapaths.
+        """
         while True:
             for dp in self.datapaths.values():
                  self._request_stats(dp)
