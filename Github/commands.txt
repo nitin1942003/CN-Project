@@ -5,3 +5,71 @@ ryu-manager controller.py
 
 # Clean up any previous Mininet topology/processes
 sudo mn -c 
+
+Basic TCP Test between two hosts:
+h1 iperf -s &
+h2 iperf -c h1 -t 10
+
+Multiple TCP flows between different hosts:
+# Start servers
+h1 iperf -s &
+h3 iperf -s -p 5001 &
+h5 iperf -s -p 5002 &
+
+# Run clients
+h2 iperf -c h1 -t 10 &
+h4 iperf -c h3 -p 5001 -t 10 &
+h6 iperf -c h5 -p 5002 -t 10
+
+UDP Traffic Test
+# Start UDP server
+h1 iperf -s -u &
+
+# Run UDP client with 1Mbps bandwidth
+h2 iperf -c h1 -u -b 1M -t 10
+
+Parallel TCP Streams:
+# Start server
+h1 iperf -s &
+
+# Run client with 4 parallel streams
+h2 iperf -c h1 -P 4 -t 10
+
+Different Window Sizes:
+# Start server
+h1 iperf -s &
+
+# Run client with 64K window size
+h2 iperf -c h1 -w 64K -t 10
+
+
+Multiple Hosts to Single Host:
+# Start server on h1
+h1 iperf -s &
+
+# Run multiple clients
+h2 iperf -c h1 -t 10 &
+h3 iperf -c h1 -t 10 &
+h4 iperf -c h1 -t 10
+
+Bidirectional Test:
+# Start server on h1
+h1 iperf -s &
+
+# Run bidirectional test from h2
+h2 iperf -c h1 -t 10 -d
+
+
+
+
+
+Common iperf options used:
+-s: Server mode
+-c: Client mode
+-t: Test duration in seconds
+-u: UDP mode
+-b: Bandwidth (for UDP)
+-P: Number of parallel streams
+-w: Window size
+-p: Port number
+-d: Bidirectional test

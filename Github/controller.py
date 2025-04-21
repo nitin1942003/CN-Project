@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import monitor
 
 # Define the topology type
-TOPO_TYPE = 'simple'
+TOPO_TYPE = 'datacenter'
 
 class SimpleSwitch13(app_manager.RyuApp):
     # Specify OpenFlow version

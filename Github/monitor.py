@@ -13,7 +13,7 @@ import subprocess
 # Define the configuration option without registering it as a CLI option
 CONF = cfg.CONF
 # Default topology type
-TOPO_TYPE = 'simple'
+TOPO_TYPE = 'datacenter'
 
 class NetworkMonitor(app_manager.RyuApp):
     """
@@ -109,7 +109,10 @@ class NetworkMonitor(app_manager.RyuApp):
                 rate = self.bitrate(stat.byte_count - cnt)
 
             self.flow_byte_counts[key] = stat.byte_count
-            print("In Port %8x Eth Dst %17s Out Port %8x Bitrate %f" % (in_port, eth_dst, out_port, rate))
+            
+            # Only print if rate is non-zero
+            if rate > 0:
+                print("In Port %8x Eth Dst %17s Out Port %8x Bitrate %f" % (in_port, eth_dst, out_port, rate))
 
             switch_id = switch + "-eth" + str(in_port)
             if rate > self.bw_threshold:
